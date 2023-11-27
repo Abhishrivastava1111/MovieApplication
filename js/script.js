@@ -221,6 +221,7 @@ async function displayShowDetails() {
     `;
   
     document.querySelector('#show-details').appendChild(div);
+    
   }
   
 
@@ -246,11 +247,35 @@ function displayBackgroundImage(type, backgroundPath) {
     }
   }
 
+  function initSwiper(){
+    const swiper = new Swiper('.swiper',{
+      slidesPerView: 1,
+      spaceBetween :30,
+      freeMode : true,
+      autoplay:{
+        delay : 4000,
+        disableOnInteraction : false
+      }, 
+      breakPoint : {
+        500:{
+          slidesPerView : 2
+        },
+        700:{
+          slidesPerView : 2
+        },
+        500:{
+          slidesPerView : 2
+        }
+      }
+    })
+  }
+
 //init app
 function init(){
     switch(global.currentPage){
         case '/':
         case '/index.html':
+          displaySlider();
             displayPopularMovies();
             console.log("home")
             break;
@@ -298,22 +323,27 @@ function addCommasToNumber(number){
     return number.toString().replace(/\B(?=(\id(3))+(?!\d))/g, ',')
 }
 
+
+
 async function displaySlider(){
-    const {result}  = await fetchAPIData('movie/now_playing')
-    result.forEach((result)=>{
+    const {results}  = await fetchAPIData('movie/now_playing')
+    
+    results.forEach((result)=>{
         const div = document.createElement('div')
         div.classList.add('swiper-slide')
 
-        div.innerHTML = `<div class="swiper-slide">
+        div.innerHTML = `
         <a href="movie-details.html?id=${result.id}">
-          <img src="${result.poster_path} alt="Movie Title" />
+        <img src="https://image.tmdb.org/t/p/w500${result.poster_path}" alt="${result.title}" />
         </a>
         <h4 class="swiper-rating">
           <i class="fas fa-star text-secondary"></i> ${result.vote_average}
         </h4>
-      </div>`
+      `
+      document.querySelector('.swiper-wrapper').appendChild(div)
     })
-    document.querySelector('.swiper-wrapper').appendChild(div)
+   
+    initSwiper();
 }
 
 init();
