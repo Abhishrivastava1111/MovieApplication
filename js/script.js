@@ -53,24 +53,24 @@ async function displayPopularTvShows(){
                     ? `<img
                   src="https://image.tmdb.org/t/p/w500${tv.poster_path}"
                   class="card-img-top"
-                  alt="${tv.title}"
+                  alt="${tv.name}"
                 />`
                     : `<img
                 src="../images/no-image.jpg"
                 class="card-img-top"
-                alt="${tv.title}"
+                alt="${tv.name}"
               />`
                 }
               </a>
               <div class="card-body">
-                <h5 class="card-title">${tv.title}</h5>
+                <h5 class="card-title">${tv.name}</h5>
                 <p class="card-text">
                   <small class="text-muted">Release: ${tv.first_air_date}</small>
                 </p>
               </div>
             `;
     
-        document.querySelector('#popular-movies').appendChild(div);
+        document.querySelector('#popular-shows').appendChild(div);
       });
       spinnerStop()
 }
@@ -85,6 +85,94 @@ async function fetchAPIData(endPoint){
     return data;
 }
 
+async function displayMovieDetail(){
+    const id = window.location.search.split('=')[1];
+
+
+    const movie = await fetchAPIData(`movie/${id}`)
+
+    displayBackgroundImage('movie', movie.backdrop_path);
+
+    document.querySelector('.details-top').innerHTML=`<div>
+    ${
+        movie.poster_path
+          ? `<img
+        src="https://image.tmdb.org/t/p/w500${movie.poster_path}"
+        class="card-img-top"
+        alt="${movie.title}"
+      />`
+          : `<img
+      src="../images/no-image.jpg"
+      class="card-img-top"
+      alt="${movie.title}"
+    />`
+      }
+  </div>
+  <div>
+    <h2>${movie.title}</h2>
+    <p>
+      <i class="fas fa-star text-primary"></i>
+      ${movie.vote_average.toFixed(1)}/10
+    </p>
+    <p class="text-muted">Release Date: ${movie.release_date}</p>
+    <p>
+    ${movie.overview}
+    </p>
+    <h5>Genres</h5>
+    <ul class="list-group">
+      ${movie.genres.map((genre) => `<li>${genre.name}</li>`).join('')}
+    </ul>
+    <a href="${
+      movie.homepage
+    }" target="_blank" class="btn">Visit Movie Homepage</a>
+  </div>
+</div>
+<div class="details-bottom">
+  <h2>Movie Info</h2>
+  <ul>
+    <li><span class="text-secondary">Budget:</span> $${addCommasToNumber(
+      movie.budget
+    )}</li>
+    <li><span class="text-secondary">Revenue:</span> $${addCommasToNumber(
+      movie.revenue
+    )}</li>
+    <li><span class="text-secondary">Runtime:</span> ${
+      movie.runtime
+    } minutes</li>
+    <li><span class="text-secondary">Status:</span> ${movie.status}</li>
+  </ul>
+  <h4>Production Companies</h4>
+  <div class="list-group">
+    ${movie.production_companies
+      .map((company) => `<span>${company.name}</span>`)
+      .join(', ')}
+  </div>
+</div>
+  `;
+
+}
+
+function displayBackgroundImage(type, backgroundPath) {
+    const overlayDiv = document.createElement('div');
+    overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${backgroundPath})`;
+    overlayDiv.style.backgroundSize = 'cover';
+    overlayDiv.style.backgroundPosition = 'center';
+    overlayDiv.style.backgroundRepeat = 'no-repeat';
+    overlayDiv.style.height = '100vh';
+    overlayDiv.style.width = '100vw';
+    overlayDiv.style.position = 'absolute';
+    overlayDiv.style.top = '0';
+    overlayDiv.style.left = '0';
+    overlayDiv.style.zIndex = '-1';
+    overlayDiv.style.opacity = '0.1';
+  
+    if (type === 'movie') {
+      document.querySelector('#movie-details').appendChild(overlayDiv);
+    } else {
+      document.querySelector('#show-details').appendChild(overlayDiv);
+    }
+  }
+
 //init app
 function init(){
     switch(global.currentPage){
@@ -94,9 +182,11 @@ function init(){
             console.log("home")
             break;
             case '/shows.html':
+                displayPopularTvShows();
                 console.log("shows")
                 break;
-                case '/novie-detail.html':
+                case '/movie-details.html':
+                    displayMovieDetail();
                     console.log("movie")
                     break;
                     case '/tv-details.html':
@@ -130,5 +220,7 @@ const highlightActiveLink=()=>{
    
 }
 
-
+function addCommasToNumber(number){
+    return number.toString().replace(/\B(?=(\id(3))+(?!\d))/g, ',')
+}
 init();
